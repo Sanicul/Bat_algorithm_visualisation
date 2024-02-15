@@ -24,9 +24,9 @@ if __name__ == '__main__':
     ba_array = []
 
     app = QApplication([])
-    application = visualisation.MainWindow()
+    application = visualisation.MainWindow(
+        BatAlgorithm(dimension, n_bat, n_generation, r0, alpha, gamma, f_min, f_max, b_down, b_up, func.easom,
+                     maxCount))
     application.show()
-
-    BatAlgorithm(dimension, n_bat, n_generation, r0, alpha, gamma, f_min, f_max, b_down, b_up, func.easom, maxCount)
 
     sys.exit(app.exec())
