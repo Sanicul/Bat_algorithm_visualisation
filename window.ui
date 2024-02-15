@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1247</width>
+    <width>1151</width>
     <height>862</height>
    </rect>
   </property>
@@ -23,11 +23,16 @@
    <widget class="QPushButton" name="oneIteration">
     <property name="geometry">
      <rect>
-      <x>1020</x>
-      <y>50</y>
-      <width>111</width>
-      <height>31</height>
+      <x>910</x>
+      <y>60</y>
+      <width>221</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Одна итерация</string>
@@ -36,11 +41,16 @@
    <widget class="QPushButton" name="initialize">
     <property name="geometry">
      <rect>
-      <x>1020</x>
+      <x>910</x>
       <y>10</y>
-      <width>111</width>
-      <height>31</height>
+      <width>221</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Инициализировать</string>
@@ -62,7 +72,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1247</width>
+     <width>1151</width>
      <height>21</height>
     </rect>
    </property>

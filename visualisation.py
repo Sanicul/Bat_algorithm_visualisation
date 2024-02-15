@@ -33,14 +33,9 @@ class MainWindow(QMainWindow):
                                   self.black_pen, self.bat_color)
 
     def do_iteration(self):
-        for i in range(10):
+        for i in range(1):
             self.alg.oneIteration()
         self.draw_bats()
-
-    def normalize_and_draw_bats(self):
-        a = self.alg.x.copy()
-        a = (a + 10) * 39
-        self.draw_bats(a)
 
     def set_initial_distribution(self):
         self.alg.proses_init()
