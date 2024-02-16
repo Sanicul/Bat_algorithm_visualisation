@@ -21,31 +21,33 @@ class BatAlgorithm():
         self.maxCount = maxCount
 
         # инициализировать значения громкости (A) и частоты пульса (r)
-        self.A = [0.95 for i in range(self.n_bat)]
-        self.r = [self.r0 for i in range(self.n_bat)]
+        self.A = np.array([0.95 for i in range(self.n_bat)])
+        self.r = np.array([self.r0 for i in range(self.n_bat)])
 
         # инициализация верхней границы и нижней границы для каждой летучей мыши
-        self.upbound = [[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)]
-        self.lowbound = [[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)]
+        self.upbound = np.array([[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)])
+        self.lowbound = np.array([[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)])
 
         # инициализировать значение 0 для всех летучих мышей
-        self.frekuensi = [0.0] * n_bat
+        self.frekuensi = np.array([0.0] * n_bat)
 
         # инициализировать значение v (скорость) для всех летучих мышей
-        self.v = [[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)]
+        self.v = np.array([[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)])
 
         # инициализировать значения х (местоположение / решение) для всех летучих мышей
-        self.x = [[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)]
+        self.x = np.array([[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)])
+
+        self.solusi = np.array([[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)])
 
         # инициализировать значение пригодности для всех летучих мышей
-        self.nilai_fitness = [0.0] * n_bat
+        self.nilai_fitness = np.array([0.0] * n_bat)
         self.nilai_fitness_minimum = 0.0
 
         # инициализиуем массив для истории улучшения
         self.history = []
 
         # инициализация лучшего решения
-        self.best = [0.0] * dimensi
+        self.best = np.array([0.0] * dimensi)
 
     def bat_terbaik(self):
         i = 0
@@ -95,70 +97,73 @@ class BatAlgorithm():
     def getMaxCount(self):
         return self.maxCount
 
+    def oneIteration(self):
+        Arata2 = np.mean(self.A)
+        for i in range(self.n_bat):
+            random = np.random.uniform(0, 1)
+            # найти частоту каждой летучей мыши с помощью уравнения 2
+            self.frekuensi[i] = self.fmin + (self.fmax - self.fmin) * random
+            for j in range(self.dimensi):
+                # найти новые v и x каждой летучей мыши, используя уравнение 3 и 4 алгоритма летучей мыши
+                self.v[i][j] = self.v[i][j] + (self.x[i][j] - self.best[j]) * self.frekuensi[i]
+                self.solusi[i][j] = self.x[i][j] + self.v[i][j]
+                self.solusi[i][j] = self.normalisasi_batas(self.solusi[i][j])
+
+            random = np.random.uniform(0, 1)
+            # если случайное значение [0,1] больше значения частоты пульса летучей мыши, то выполнить локальный поиск
+            if (random > self.r[i]):
+                for j in range(self.dimensi):
+                    random = np.random.uniform(-1.0, 1.0)
+                    self.solusi[i][j] = self.x[i][j] + random * Arata2
+                    self.solusi[i][j] = self.normalisasi_batas(self.solusi[i][j])
+
+            # рассчитать пригодность нового решения
+            nilai_fitness = self.fungsi(self.solusi[i])
+
+            random = np.random.uniform(0, 1)
+
+            if (random < self.A[i] and nilai_fitness < self.nilai_fitness[i]):
+                self.nilai_fitness[i] = nilai_fitness
+                for j in range(self.dimensi):
+                    self.x[i][j] = self.solusi[i][j]
+
+            if (self.nilai_fitness[i] < self.nilai_fitness_minimum):
+                # заменить лучшее решение
+                self.nilai_fitness_minimum = self.fungsi(self.solusi[i])
+                for j in range(self.dimensi):
+                    self.best[j] = self.x[i][j]
+
+                    # обновлять громкость и частоту пульса каждой летучей мыши
+                self.A[i] = self.A[i] * self.alpha
+                self.r[i] = self.r0 * (1 - math.exp(-1 * self.gamma * i))
+        #             print("Ценность поколении для расчёта (", n, ") : ", self.nilai_fitness)
+        self.history.append(self.nilai_fitness_minimum)
+        # print(n, ' Решение %.4f' % self.nilai_fitness_minimum, '\t', self.best)
+        # print("Лучшее решение ", )
+
+        #if n > self.maxCount + 2:
+            #if np.min(self.history[n - self.maxCount:n - 2]) <= self.nilai_fitness_minimum:
+                #count = count + 1
+                #if count >= self.maxCount:
+                    # print('Улучшений не было в течении ', self.maxCount, ' прошло ', n, 'итераций')
+                    # print(n, ' Решение %.4f' % self.nilai_fitness_minimum, '\t', self.best)
+                    #self.history = np.array(self.history)
+                    #return 0
+            #else:
+                # print('count сброшен')
+                #count = 0
+
+        #return self.x
+
     def proses_ba(self):
-        # матричное решение (много размеров ЛМ х РАЗМЕРНОСТЬ)
-        solusi = [[0.0 for i in range(self.dimensi)] for j in range(self.n_bat)]
+        # матричное решение (много размеров ЛМ х РАЗМЕРНОСТЬ
         count = 0
         self.proses_init()
         #         print(self.nilai_fitness)
         # np.random.seed(self.dimensi*self.maxCount/(self.maxCount+np.exp(self.dimensi)))
         for n in range(self.n_generasi):
-            Arata2 = np.mean(self.A)
-            for i in range(self.n_bat):
-                random = np.random.uniform(0, 1)
-                # найти частоту каждой летучей мыши с помощью уравнения 2
-                self.frekuensi[i] = self.fmin + (self.fmax - self.fmin) * random
-                for j in range(self.dimensi):
-                    # найти новые v и x каждой летучей мыши, используя уравнение 3 и 4 алгоритма летучей мыши
-                    self.v[i][j] = self.v[i][j] + (self.x[i][j] - self.best[j]) * self.frekuensi[i]
-                    solusi[i][j] = self.x[i][j] + self.v[i][j]
-                    solusi[i][j] = self.normalisasi_batas(solusi[i][j])
-
-                random = np.random.uniform(0, 1)
-                # если случайное значение [0,1] больше значения частоты пульса летучей мыши, то выполнить локальный
-                # поиск на основе лучшей летучей мыши
-                if (random > self.r[i]):
-                    for j in range(self.dimensi):
-                        random = np.random.uniform(-1.0, 1.0)
-                        solusi[i][j] = self.best[j] + random * Arata2
-                        solusi[i][j] = self.normalisasi_batas(solusi[i][j])
-
-                # рассчитать пригодность нового решения
-                nilai_fitness = self.fungsi(solusi[i])
-
-                random = np.random.uniform(0, 1)
-
-                if (random < self.A[i] and nilai_fitness < self.nilai_fitness[i]):
-                    self.nilai_fitness[i] = nilai_fitness
-                    for j in range(self.dimensi):
-                        self.x[i][j] = solusi[i][j]
-
-                if (self.nilai_fitness[i] < self.nilai_fitness_minimum):
-                    # заменить лучшее решение
-                    self.nilai_fitness_minimum = self.fungsi(solusi[i])
-                    for j in range(self.dimensi):
-                        self.best[j] = self.x[i][j]
-
-                        # обновлять громкость и частоту пульса каждой летучей мыши
-                    self.A[i] = self.A[i] * self.alpha
-                    self.r[i] = self.r0 * (1 - math.exp(-1 * self.gamma * i))
-            #             print("Ценность поколении для расчёта (", n, ") : ", self.nilai_fitness)
-            self.history.append(self.nilai_fitness_minimum)
-            #print(n, ' Решение %.4f' % self.nilai_fitness_minimum, '\t', self.best)
-            # print("Лучшее решение ", )
-
-            if n > self.maxCount+2:
-                if np.min(self.history[n - self.maxCount:n - 2]) <= self.nilai_fitness_minimum:
-                    count = count + 1
-                    if count >= self.maxCount:
-                        print('Улучшений не было в течении ', self.maxCount, ' прошло ', n, 'итераций')
-                        print(n, ' Решение %.4f' % self.nilai_fitness_minimum, '\t', self.best)
-                        self.history = np.array(self.history)
-                        return 0
-                else:
-                    #print('count сброшен')
-                    count = 0
-        print('Расчёт закончился по истечению максимума итераций (', self.n_generasi, ')')
-        print(self.nilai_fitness_minimum)
-        print(self.best)
+            self.oneIteration()
+        #print('Расчёт закончился по истечению максимума итераций (', self.n_generasi, ')')
+        #print(self.nilai_fitness_minimum)
+        #print(self.best)
         return 1
